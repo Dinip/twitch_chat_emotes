@@ -1,4 +1,4 @@
-function getUrlParameter(name) {
+function getUrlParameter (name) {
     name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
     let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
     let results = regex.exec(location.search);
@@ -72,12 +72,12 @@ let seventvEmotes = '';
 let ffzEmotes = '';
 
 // Dynamically get browser window width/height and set the #container.
-$(document).ready(function() {
-    $('#container').css({'height':window.innerHeight, 'width':window.innerWidth});
+$(document).ready(function () {
+    $('#container').css({ 'height': window.innerHeight, 'width': window.innerWidth });
 });
 
-function htmlEntities(html) {
-    function it() {
+function htmlEntities (html) {
+    function it () {
         return html.map(function (n, i, arr) {
 
             if (n.length === 1) {
@@ -103,11 +103,20 @@ function htmlEntities(html) {
     return html;
 }
 
-function getRandomNumberBetween(min, max) {
-    return Math.floor(Math.random()*(max-min+1)+min);
+function getRandomNumberBetween (min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function emoteScale(emoteSize) {
+function emoteScale (emoteSize, provider) {
+    if (provider === '7tv' || provider === 'ffz') {
+        if (emoteSize === 'random') {
+            const r = getRandomNumberBetween(1, 3);
+            return r === 3 ? 4 : r;
+        } else {
+            return emoteSize === 3 ? 4 : emoteSize;
+        }
+    }
+
     if (emoteSize === 'random') {
         return getRandomNumberBetween(1, 3);
     } else {
@@ -115,7 +124,7 @@ function emoteScale(emoteSize) {
     }
 }
 
-function formatEmotes(text, emotes) {
+function formatEmotes (text, emotes) {
     let splitText = text.split('');
     for (let i in emotes) {
         let e = emotes[i];
@@ -129,7 +138,7 @@ function formatEmotes(text, emotes) {
                         return ''
                     });
                 splitText = splitText.slice(0, mote[0]).concat(empty).concat(splitText.slice(mote[0] + 1, splitText.length));
-                splitText.splice(mote[0], 0, "https://static-cdn.jtvnw.net/emoticons/v2/" + i + "/default/dark/" + emoteScale(emoteSize) + ".0,");
+                splitText.splice(mote[0], 0, "https://static-cdn.jtvnw.net/emoticons/v2/" + i + "/default/dark/" + emoteScale(emoteSize, 'twitch') + ".0,");
             }
         }
     }
@@ -145,7 +154,7 @@ if (bttv === 'true') {
     });
 }
 
-function doBttvEmotes(chatMessage) {
+function doBttvEmotes (chatMessage) {
 
     let bttvEmotesStr = '';
 
@@ -154,7 +163,7 @@ function doBttvEmotes(chatMessage) {
     chatMessageArr.forEach(function (item) {
         for (let x in bttvEmotes) {
             if (item === bttvEmotes[x]['code']) {
-                bttvEmotesStr += 'https://cdn.betterttv.net/emote/' + bttvEmotes[x]['id'] + '/' + emoteScale(emoteSize) + 'x,';
+                bttvEmotesStr += 'https://cdn.betterttv.net/emote/' + bttvEmotes[x]['id'] + '/' + emoteScale(emoteSize, 'bttv') + 'x,';
             }
         }
     });
@@ -173,7 +182,7 @@ if (seventv === 'true') {
     });
 }
 
-function do7tvEmotes(chatMessage) {
+function do7tvEmotes (chatMessage) {
 
     let seventvEmotesStr = '';
 
@@ -182,7 +191,7 @@ function do7tvEmotes(chatMessage) {
     chatMessageArr.forEach(function (item) {
         for (let x in seventvEmotes) {
             if (item === seventvEmotes[x]['code']) {
-                seventvEmotesStr += 'https://cdn.7tv.app/emote/' + seventvEmotes[x]['id'] + '/' + emoteScale(emoteSize) + 'x.webp,';
+                seventvEmotesStr += 'https://cdn.7tv.app/emote/' + seventvEmotes[x]['id'] + '/' + emoteScale(emoteSize, '7tv') + 'x.webp,';
             }
         }
     });
@@ -201,7 +210,7 @@ if (ffz === 'true') {
     });
 }
 
-function doffzEmotes(chatMessage) {
+function doffzEmotes (chatMessage) {
 
     let ffzEmotesStr = '';
 
@@ -210,7 +219,7 @@ function doffzEmotes(chatMessage) {
     chatMessageArr.forEach(function (item) {
         for (let x in ffzEmotes) {
             if (item === ffzEmotes[x]['code']) {
-                ffzEmotesStr += 'https://cdn.frankerfacez.com/emote/' + seventvEmotes[x]['id'] + '/' + emoteScale(emoteSize);
+                ffzEmotesStr += 'https://cdn.frankerfacez.com/emote/' + ffzEmotes[x]['id'] + '/' + emoteScale(emoteSize, 'ffz');
             }
         }
     });
@@ -221,7 +230,7 @@ function doffzEmotes(chatMessage) {
 
 }
 
-function fadeInOut(item) {
+function fadeInOut (item) {
     item.fadeIn(2000).delay(duration).fadeOut(2000, function () {
         if (item.next().length) {
             fadeInOut(item.next());
@@ -237,7 +246,7 @@ const client = new tmi.Client({
         debug: true,
         skipUpdatingEmotesets: true
     },
-    connection: {reconnect: true},
+    connection: { reconnect: true },
     channels: [channelName]
 });
 
@@ -253,7 +262,7 @@ client.on('message', (channel, tags, message, self) => {
         doEmotes(); // all users
     }
 
-    function doEmotes() {
+    function doEmotes () {
         let randomNumHeight = Math.floor(Math.random() * (window.innerHeight - 1 + 1)) + 1;
         let randomNumWidth = Math.floor(Math.random() * (window.innerWidth - 1 + 1)) + 1;
         let chatemotes = tags.emotes;
@@ -262,17 +271,17 @@ client.on('message', (channel, tags, message, self) => {
         if (self) return;
 
         // If Twitch emotes
-        let chatEmote = formatEmotes('', chatemotes, emoteScale);
+        let chatEmote = formatEmotes('', chatemotes);
 
         // Create emotes array
         let chatEmoteArr = chatEmote.split(',');
         chatEmoteArr = chatEmoteArr.filter(Boolean);
 
-        let bttvStr = doBttvEmotes(message, emoteScale);
+        let bttvStr = doBttvEmotes(message);
 
-        let seventvStr = do7tvEmotes(message, emoteScale);
+        let seventvStr = do7tvEmotes(message);
 
-        let ffzStr = doffzEmotes(message, emoteScale);
+        let ffzStr = doffzEmotes(message);
 
         // Set a limit on how many emotes can be displayed from each message
         let limitedEmoteArr = chatEmoteArr.filter((val, i) => i < parseInt(emoteLimit));
@@ -290,10 +299,10 @@ client.on('message', (channel, tags, message, self) => {
         ffzEmoteArr = ffzEmoteArr.filter(Boolean);
 
         let randomEffect;
-        let effectsArray = ['fade','grow','rotate','skew'];
+        let effectsArray = ['fade', 'grow', 'rotate', 'skew'];
 
         if (effect === 'random') {
-            randomEffect = effectsArray[Math.floor(Math.random()*effectsArray.length)];
+            randomEffect = effectsArray[Math.floor(Math.random() * effectsArray.length)];
         }
 
         // Debugging
@@ -427,11 +436,11 @@ client.on('message', (channel, tags, message, self) => {
             });
         }
 
-        function randomFromTo(from, to) {
+        function randomFromTo (from, to) {
             return Math.floor(Math.random() * (to - from + 1) + from);
         }
 
-        function moveRandom(obj) {
+        function moveRandom (obj) {
             /* get container position and size
              * -- access method : cPos.top and cPos.left */
             let cPos = $('#container').offset();
